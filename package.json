@@ -2,9 +2,33 @@
     "name": "sprucebot-node",
     "version": "0.0.1",
     "scripts": {
+        "lint": "./node_modules/.bin/eslint --fix '**/**/*{.js,.scss}'",
+        "test": "node ./node_modules/jest/bin/jest.js --coverage",
+        "precommit": "npm run lint",
+        "prepush": "npm run lint && npm run test"
     },
-   "dependencies": {
-       
-   }
+    "dependencies": {
+        "glob": "^7.1.2"
+    },
+    "devDependencies": {
+        "add": "^2.0.6",
+        "eslint": "^4.10.0",
+        "eslint-config-prettier": "^2.6.0",
+        "eslint-plugin-prettier": "^2.3.1",
+        "jest": "^21.2.1",
+        "prettier": "^1.7.4",
+        "yarn": "^1.2.1"
+    },
+    "jest": {
+        "clearMocks": true,
+        "testPathIgnorePatterns": [
+          "/config/"
+        ],
+        "collectCoverageFrom": [
+          "**/*.js",
+          "!**/node_modules/**",
+          "!**/__TEST__/**"
+        ],
+        "coverageDirectory": "coverage"
+      }
 }
-  
