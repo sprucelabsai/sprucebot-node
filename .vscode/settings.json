@@ -1,0 +1,8 @@
+{
+    "eslint.enable": true,
+    "files.autoSave":"onFocusChange",
+    "eslint.autoFixOnSave": true,
+    "search.exclude": {
+      "**/node_modules": true
+    }
+  }
