@@ -1,12 +1,10 @@
 const glob = require('glob')
 const path = require('path')
 
-module.exports = dir => {
+module.exports = (dir, router) => {
 	const matches = glob.sync(path.join(dir, '/**/*.js'))
-	let wares = []
 	matches.forEach(match => {
-		const m = require(match)
-		wares.push(m)
+		const ware = require(match)
+		ware(router)
 	})
-	return wares
 }

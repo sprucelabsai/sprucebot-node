@@ -10,7 +10,7 @@ class Sprucebot {
 		host,
 		name,
 		description,
-		webhookUrl,
+		skillUrl,
 		svgIcon,
 		allowSelfSignedCerts = false
 	}) {
@@ -20,11 +20,11 @@ class Sprucebot {
 			!host ||
 			!name ||
 			!description ||
-			!webhookUrl ||
+			!skillUrl ||
 			!svgIcon
 		) {
 			throw new Error(
-				'You are missing some params! Make sure you pass the following: apiKey, skillId, host, name, description, webhookUrl, & svgIcon.'
+				'You are missing some params! Make sure you pass the following: apiKey, skillId, host, name, description, skillUrl & svgIcon.'
 			)
 		}
 
@@ -32,9 +32,9 @@ class Sprucebot {
 		this.name = name
 		this.description = description
 		this.icon = svgIcon
-		this.webhookUrl = webhookUrl + '/hook'
-		this.iframeUrl = webhookUrl
-		this.marketingUrl = webhookUrl + '/marketing'
+		this.webhookUrl = skillUrl + '/hook'
+		this.iframeUrl = skillUrl
+		this.marketingUrl = skillUrl + '/marketing'
 
 		this.version = '1.0'
 		this.https = new Https({
