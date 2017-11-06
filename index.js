@@ -3,31 +3,27 @@ const routes = require('./factories/routes')
 const wares = require('./factories/wares')
 const Https = require('./https')
 
+/**
+ * Politely tell someone they didn't define an arg
+ * @param {string} name 
+ */
+function argError(name) {
+	throw new Error(
+		`You are missing some params! Make sure you set ${name} properly`
+	)
+}
+
 class Sprucebot {
 	constructor({
-		apiKey,
-		skillId,
-		host,
-		name,
-		description,
-		skillUrl,
-		svgIcon,
+		apiKey = argError('apiKey'),
+		skillId = argError('apiKey'),
+		host = argError('apiKey'),
+		name = argError('apiKey'),
+		description = argError('apiKey'),
+		skillUrl = argError('apiKey'),
+		svgIcon = argError('apiKey'),
 		allowSelfSignedCerts = false
 	}) {
-		if (
-			!apiKey ||
-			!skillId ||
-			!host ||
-			!name ||
-			!description ||
-			!skillUrl ||
-			!svgIcon
-		) {
-			throw new Error(
-				'You are missing some params! Make sure you pass the following: apiKey, skillId, host, name, description, skillUrl & svgIcon.'
-			)
-		}
-
 		// Setup http(s) class with everything it needs to talk to api
 		this.name = name
 		this.description = description
