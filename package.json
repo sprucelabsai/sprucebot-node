@@ -22,13 +22,13 @@
     "jest": {
         "clearMocks": true,
         "testPathIgnorePatterns": [
-          "/config/"
+            "/config/"
         ],
         "collectCoverageFrom": [
-          "**/*.js",
-          "!**/node_modules/**",
-          "!**/__TEST__/**"
+            "**/*.js",
+            "!**/node_modules/**",
+            "!**/__TEST__/**"
         ],
         "coverageDirectory": "coverage"
-      }
+    }
 }

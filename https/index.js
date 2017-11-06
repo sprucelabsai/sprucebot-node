@@ -23,7 +23,7 @@ module.exports = class Https {
 
 	/**
      * GET an endpoint.
-     * 
+     *
      * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${skillId}
      * @param {Object} query Vanilla object that is converted into a query string
      * @returns {Promise}
@@ -36,7 +36,7 @@ module.exports = class Https {
 				'x-skill-api-key': this.apiKey
 			}
 
-			https.get(
+			const request = https.request(
 				{
 					host: this.host,
 					path: url.build(path, query, this.version, this.skillId),
@@ -44,19 +44,26 @@ module.exports = class Https {
 					headers
 				},
 				response => {
-					this.handleResponse(response, resolve, reject)
+					this.handleResponse(request, response, resolve, reject)
 				}
 			)
+
+			// handle error with request
+			request.on('error', err => {
+				reject(err)
+			})
+
+			request.end()
 		})
 	}
 
 	/**
      * POST some data to the API. Override `method` to PATCH for patching.
-     * 
-     * @param {String} path 
-     * @param {Object} data 
-     * @param {Object} query 
-     * @param {String} method 
+     *
+     * @param {String} path
+     * @param {Object} data
+     * @param {Object} query
+     * @param {String} method
      * @returns {Promise}
      */
 	async post(path, data, query, method = 'POST') {
@@ -76,9 +83,14 @@ module.exports = class Https {
 					path: url.build(path, query, this.version, this.skillId)
 				},
 				response => {
-					this.handleResponse(response, resolve, reject)
+					this.handleResponse(request, response, resolve, reject)
 				}
 			)
+
+			// handle error with request
+			request.on('error', err => {
+				reject(err)
+			})
 
 			request.write(url.serialize(data))
 			request.end()
@@ -87,10 +99,10 @@ module.exports = class Https {
 
 	/**
 	 * Make an update through the API
-	 * 
-	 * @param {String} path 
-	 * @param {Object} data 
-	 * @param {Object} query 
+	 *
+	 * @param {String} path
+	 * @param {Object} data
+	 * @param {Object} query
 	 * @returns {Promise}
 	 */
 	async patch(path, data, query) {
@@ -99,9 +111,9 @@ module.exports = class Https {
 
 	/**
 	 * Delete something from the API
-	 * @param {String} path 
+	 * @param {String} path
 	 * @param {Object} query
-	 * @returns {Promise} 
+	 * @returns {Promise}
 	 */
 	async delete(path, query) {
 		return new Promise((resolve, reject) => {
@@ -117,9 +129,14 @@ module.exports = class Https {
 					path: url.build(path, query, this.version, this.skillId)
 				},
 				response => {
-					this.handleResponse(response, resolve, reject)
+					this.handleResponse(request, response, resolve, reject)
 				}
 			)
+			// handle error with request
+			request.on('error', err => {
+				reject(err)
+			})
+
 			request.write('')
 			request.end()
 		})
@@ -127,25 +144,35 @@ module.exports = class Https {
 
 	/**
 	 * Univeral handling of all responses from the API
-	 * 
-	 * @param {Response} response 
-	 * @param {Function} resolve 
-	 * @param {Function} reject 
+	 *
+	 * @param {Request} request
+	 * @param {Response} response
+	 * @param {Function} resolve
+	 * @param {Function} reject
 	 */
-	handleResponse(response, resolve, reject) {
+	handleResponse(request, response, resolve, reject) {
 		// Build response as data comes in
 		let body = ''
 		response.on('data', d => (body += d))
 
 		// Handle errors
-		response.on('error', err => reject(err))
+		response.on('error', err => {
+			reject(err)
+		})
 
 		// Handle completion
 		response.on('end', () => {
 			try {
 				var parsed = JSON.parse(body)
 				if (response.statusCode !== 200) {
-					reject(new Error(parsed.friendlyReason || parsed.reason || parsed))
+					const error = new Error(
+						parsed.friendlyReason || parsed.reason || parsed
+					)
+					error.request = request
+					error.response = response
+					error.response.body = body
+					error.response.json = parsed
+					reject(error)
 				} else {
 					resolve(parsed)
 				}
