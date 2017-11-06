@@ -24,7 +24,7 @@
             "name": "Test API",
             "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
             "args": [
-              "${workspaceRoot}/test/api.test.js"
+              "${workspaceRoot}/index.test.js"
             ],
             "skipFiles": [
               "coverage",
