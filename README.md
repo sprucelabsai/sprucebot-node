@@ -1,1 +1,1 @@
-# Sprucebot for Node
+# Sprucebot for Node [![Build Status](https://travis-ci.org/sprucelabsai/sprucebot-node.svg?branch=master)](https://travis-ci.org/sprucelabsai/sprucebot-node)
