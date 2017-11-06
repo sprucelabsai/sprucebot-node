@@ -2,8 +2,8 @@
     "name": "sprucebot-node",
     "version": "0.0.1",
     "scripts": {
-        "lint": "./node_modules/.bin/eslint --fix '**/**/*{.js,.scss}'",
-        "test": "node ./node_modules/jest/bin/jest.js --coverage",
+        "lint": "eslint '**/**/*{.js}'",
+        "test": "jest --coverage",
         "precommit": "npm run lint",
         "prepush": "npm run lint && npm run test"
     },

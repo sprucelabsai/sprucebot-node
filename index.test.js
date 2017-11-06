@@ -1,4 +1,4 @@
-const Sprucebot = require('../index')
+const Sprucebot = require('./index')
 const fs = require('fs')
 const path = require('path')
 
@@ -14,7 +14,9 @@ const SKILL = {
 	description: `This skill is for the tests that are run on pre-commit. ${TIMESTAMP}`,
 	skillUrl: `http://noop/${TIMESTAMP}`,
 	allowSelfSignedCerts: true,
-	svgIcon: fs.readFileSync(path.join(__dirname, 'icons/flask.svg')).toString()
+	svgIcon: fs
+		.readFileSync(path.join(__dirname, '__mocks__/icons/flask.svg'))
+		.toString()
 }
 describe('API Tests', () => {
 	beforeEach(async () => {
@@ -26,12 +28,22 @@ describe('API Tests', () => {
 		//make sure everything is actually reset
 		const data = await sb.https.get('/')
 
-		expect(data.name).toEqual(sb.name)
-		expect(data.description).toEqual(sb.description)
-		expect(data.icon).toEqual(sb.icon)
-		expect(data.iframeUrl).toEqual(sb.iframeUrl)
-		expect(data.marketingUrl).toEqual(sb.marketingUrl)
-		expect(data.skillUrl).toEqual(sb.skillUrl)
+		if (data.name !== sb.name)
+			throw new Error(`Environment not reset for sb.name: ${sb.name}`)
+		if (data.description !== sb.description)
+			throw new Error(
+				`Environment not reset for sb.description: ${sb.description}`
+			)
+		if (data.icon !== sb.icon)
+			throw new Error(`Environment not reset for sb.icon: ${sb.icon}`)
+		if (data.iframeUrl !== sb.iframeUrl)
+			throw new Error(`Environment not reset for sb.iframeUrl: ${sb.iframeUrl}`)
+		if (data.marketingUrl !== sb.marketingUrl)
+			throw new Error(
+				`Environment not reset for sb.marketingUrl: ${sb.marketingUrl}`
+			)
+		if (data.skillUrl !== sb.skillUrl)
+			throw new Error(`Environment not reset for sb.skillUrl: ${sb.skillUrl}`)
 
 		//clear all meta data for this skill
 		const metas = await sb.metas({ limit: 200 })
@@ -43,7 +55,7 @@ describe('API Tests', () => {
 	})
 
 	test(`Sprucebot should be able to change it's name`, async () => {
-		expect.assertions(7)
+		expect.assertions(1)
 
 		const options = { ...SKILL, name: 'Waka Waka' }
 		const sb = new Sprucebot(options)
@@ -55,7 +67,7 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to fetch locations', async () => {
-		expect.assertions(8)
+		expect.assertions(2)
 
 		const sb = new Sprucebot(SKILL)
 		const locations = await sb.locations()
@@ -67,19 +79,19 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to load Spruce', async () => {
-		expect.assertions(7)
+		expect.assertions(1)
 
 		const sb = new Sprucebot(SKILL)
 		const spruce = await sb.location(SPRUCE_ID)
 		expect(spruce.id).toEqual(SPRUCE_ID)
 	})
 
-	test('Sprucebot should be able to send messages', async () => {
+	test.skip('Sprucebot should be able to send messages', async () => {
 		// I have no idea how to test this one
 	})
 
 	test('Sprucebot should be able to create skill wide meta data and find it', async () => {
-		expect.assertions(8)
+		expect.assertions(2)
 
 		const sb = new Sprucebot(SKILL)
 
@@ -91,7 +103,7 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to create location specific meta data and find it', async () => {
-		expect.assertions(10)
+		expect.assertions(4)
 
 		const sb = new Sprucebot(SKILL)
 
@@ -107,16 +119,18 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should NOT be able to create guest specific meta data and find it', async () => {
-		expect.assertions(6)
+		expect.assertions(1)
 
 		const sb = new Sprucebot(SKILL)
-		expect(
-			sb.createMeta('lucky-numbers', [1, 2, 3], { userId: TAYLOR_ID })
-		).rejects.toBeTruthy() // any error message counts
+		try {
+			await sb.createMeta('lucky-numbers', [1, 2, 3], { userId: TAYLOR_ID })
+		} catch (e) {
+			expect(e.response.statusCode).toEqual(403)
+		}
 	})
 
 	test('Sprucebot should be able to create meta data for a location+user and find it', async () => {
-		expect.assertions(16)
+		expect.assertions(9)
 
 		const sb = new Sprucebot(SKILL)
 
@@ -145,7 +159,7 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to update meta data', async () => {
-		expect.assertions(8)
+		expect.assertions(2)
 
 		const sb = new Sprucebot(SKILL)
 		const rewards = await sb.createMeta('rewards', [
@@ -167,7 +181,7 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to upsert metadata', async () => {
-		expect.assertions(10)
+		expect.assertions(4)
 
 		const sb = new Sprucebot(SKILL)
 		const value = { foo: 'bar' }
