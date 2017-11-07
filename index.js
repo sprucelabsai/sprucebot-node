@@ -21,7 +21,8 @@ class Sprucebot {
 		host = required('host'),
 		name = required('name'),
 		description = required('description'),
-		skillUrl = required('skillUrl'),
+		interfaceUrl = required('interfaceUrl'),
+		serverUrl = required('serverUrl'),
 		svgIcon = required('svgIcon'),
 		allowSelfSignedCerts = false
 	}) {
@@ -29,9 +30,9 @@ class Sprucebot {
 		this.name = name
 		this.description = description
 		this.icon = svgIcon
-		this.webhookUrl = skillUrl + '/hook'
-		this.iframeUrl = skillUrl
-		this.marketingUrl = skillUrl + '/marketing'
+		this.webhookUrl = serverUrl + '/hook'
+		this.iframeUrl = interfaceUrl
+		this.marketingUrl = interfaceUrl + '/marketing'
 
 		this.version = '1.0'
 		this.https = new Https({
