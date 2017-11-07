@@ -1,13 +1,14 @@
 const context = require('./factories/context')
 const routes = require('./factories/routes')
 const wares = require('./factories/wares')
+const listeners = require('./factories/listeners')
 const Https = require('./https')
 
 /**
  * Politely tell someone they didn't define an arg
  * @param {string} name 
  */
-function argError(name) {
+function required(name) {
 	throw new Error(
 		`You are missing some params! Make sure you set ${name} properly`
 	)
@@ -15,13 +16,13 @@ function argError(name) {
 
 class Sprucebot {
 	constructor({
-		apiKey = argError('apiKey'),
-		skillId = argError('apiKey'),
-		host = argError('apiKey'),
-		name = argError('apiKey'),
-		description = argError('apiKey'),
-		skillUrl = argError('apiKey'),
-		svgIcon = argError('apiKey'),
+		apiKey = required('apiKey'),
+		id = required('id'),
+		host = required('host'),
+		name = required('name'),
+		description = required('description'),
+		skillUrl = required('skillUrl'),
+		svgIcon = required('svgIcon'),
 		allowSelfSignedCerts = false
 	}) {
 		// Setup http(s) class with everything it needs to talk to api
@@ -36,14 +37,14 @@ class Sprucebot {
 		this.https = new Https({
 			host,
 			apiKey,
-			skillId,
+			id,
 			version: this.version,
 			allowSelfSignedCerts
 		})
 
 		console.log(
 			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nskillId : ${skillId} \nname : ${name}\n---------------------------------`
+				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nid : ${id} \nname : ${name}\n---------------------------------`
 		)
 
 		// Setup skillskit helpers
@@ -51,7 +52,8 @@ class Sprucebot {
 			factories: {
 				context,
 				routes,
-				wares
+				wares,
+				listeners
 			}
 		}
 	}
