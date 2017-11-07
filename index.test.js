@@ -7,7 +7,7 @@ const TIMESTAMP = new Date().getTime()
 const SPRUCE_ID = '1975559c-e071-4198-8ab3-eccbeb00e1d0'
 const TAYLOR_ID = '78245981-5022-49a7-b2f2-6ac687e0f3d1'
 const SKILL = {
-	skillId: '482D8B56-5223-43BF-8E7F-011509B9968A',
+	id: '482D8B56-5223-43BF-8E7F-011509B9968A',
 	apiKey: 'DD16373A-9482-4E27-A4A3-77B2664F6C82',
 	host: 'dev-api.sprucebot.com',
 	name: `Unit Test Skill - ${TIMESTAMP}`,

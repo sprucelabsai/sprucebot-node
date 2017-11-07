@@ -2,21 +2,15 @@ const url = require('../utilities/url')
 const https = require('https')
 
 module.exports = class Https {
-	constructor({
-		host,
-		apiKey,
-		skillId,
-		version,
-		allowSelfSignedCerts = false
-	}) {
-		if (!host || !apiKey || !skillId || !version) {
+	constructor({ host, apiKey, id, version, allowSelfSignedCerts = false }) {
+		if (!host || !apiKey || !id || !version) {
 			throw new Error(
-				'You gotta pass host, apiKey, skillId, and version to the Http constructor'
+				'You gotta pass host, apiKey, id, and version to the Http constructor'
 			)
 		}
 		this.host = host
 		this.apiKey = apiKey
-		this.skillId = skillId
+		this.id = id
 		this.version = version
 		this.allowSelfSignedCerts = allowSelfSignedCerts
 	}
@@ -24,7 +18,7 @@ module.exports = class Https {
 	/**
      * GET an endpoint.
      *
-     * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${skillId}
+     * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${id}
      * @param {Object} query Vanilla object that is converted into a query string
      * @returns {Promise}
      */
@@ -39,7 +33,7 @@ module.exports = class Https {
 			const request = https.request(
 				{
 					host: this.host,
-					path: url.build(path, query, this.version, this.skillId),
+					path: url.build(path, query, this.version, this.id),
 					rejectUnauthorized: !this.allowSelfSignedCerts,
 					headers
 				},
@@ -80,7 +74,7 @@ module.exports = class Https {
 					host: this.host,
 					headers,
 					rejectUnauthorized: !this.allowSelfSignedCerts,
-					path: url.build(path, query, this.version, this.skillId)
+					path: url.build(path, query, this.version, this.id)
 				},
 				response => {
 					this.handleResponse(request, response, resolve, reject)
@@ -126,7 +120,7 @@ module.exports = class Https {
 					host: this.host,
 					headers,
 					rejectUnauthorized: !this.allowSelfSignedCerts,
-					path: url.build(path, query, this.version, this.skillId)
+					path: url.build(path, query, this.version, this.id)
 				},
 				response => {
 					this.handleResponse(request, response, resolve, reject)
