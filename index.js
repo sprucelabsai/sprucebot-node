@@ -229,6 +229,7 @@ class Sprucebot {
 	 * Fetch some meta. Create it if it does not exist
 	 *
 	 * @param {String} key
+	 * @param {*} value
 	 * @param {Object} query
 	 * @param {Boolean} suppressParseErrors
 	 */
@@ -247,7 +248,32 @@ class Sprucebot {
 		// not found, create it
 		if (!meta) {
 			meta = await this.createMeta(key, value, Array.from(arguments)[2])
-		} else if (JSON.stringify(meta.value) != JSON.stringify(value)) {
+		}
+		return meta
+	}
+	/**
+	 * Creates a meta if it does not exist, updates it if it does
+	 * @param {String} key 
+	 * @param {*} value 
+	 * @param {Object} query 
+	 * @param {Boolean} suppressParseErrors 
+	 */
+	async upsertMeta(
+		key,
+		value,
+		{ locationId, userId } = {},
+		suppressParseErrors = true
+	) {
+		let meta = await this.meta(
+			key,
+			Array.from(arguments)[2],
+			suppressParseErrors
+		)
+
+		// not found, create it
+		if (!meta) {
+			meta = await this.createMeta(key, value, Array.from(arguments)[2])
+		} else if (JSON.stringify(meta.value) !== JSON.stringify(value)) {
 			//found, but value has changed
 			meta = await this.updateMeta(meta.id, { value: value })
 		}

@@ -12,7 +12,8 @@ const SKILL = {
 	host: 'dev-api.sprucebot.com',
 	name: `Unit Test Skill - ${TIMESTAMP}`,
 	description: `This skill is for the tests that are run on pre-commit. ${TIMESTAMP}`,
-	skillUrl: `http://noop/${TIMESTAMP}`,
+	interfaceUrl: `http://noop/${TIMESTAMP}`,
+	serverUrl: `http://noop/${TIMESTAMP}`,
 	allowSelfSignedCerts: true,
 	svgIcon: fs
 		.readFileSync(path.join(__dirname, '__mocks__/icons/flask.svg'))
@@ -180,7 +181,7 @@ describe('API Tests', () => {
 		expect(fetchUpdatedRewards.value).toEqual(updatedRewards.value)
 	})
 
-	test('Sprucebot should be able to upsert metadata', async () => {
+	test('Sprucebot should be able to find or metadata', async () => {
 		expect.assertions(4)
 
 		const sb = new Sprucebot(SKILL)
@@ -189,7 +190,23 @@ describe('API Tests', () => {
 		expect(upserted.id).toBeTruthy()
 
 		const upserted2 = await sb.metaOrCreate('rewards-again', value) // need a better way to test if the value has not changes
-		const upserted3 = await sb.metaOrCreate('rewards-again', { hello: 'world' })
+		const upserted3 = await sb.metaOrCreate('rewards-again', { hello: 'world' }) //also should not have changed
+
+		expect(upserted.id).toEqual(upserted2.id)
+		expect(upserted.id).toEqual(upserted3.id)
+		expect(upserted3.value).toEqual(value)
+	})
+
+	test('Sprucebot should be able to upsert metadata', async () => {
+		expect.assertions(4)
+
+		const sb = new Sprucebot(SKILL)
+		const value = { foo: 'bar' }
+		const upserted = await sb.upsertMeta('rewards-again', value)
+		expect(upserted.id).toBeTruthy()
+
+		const upserted2 = await sb.upsertMeta('rewards-again', value) // need a better way to test if the value has not changes
+		const upserted3 = await sb.upsertMeta('rewards-again', { hello: 'world' }) //also should not have changed
 
 		expect(upserted.id).toEqual(upserted2.id)
 		expect(upserted.id).toEqual(upserted3.id)
