@@ -136,7 +136,7 @@ class Sprucebot {
 		{ linksToWebView, webViewQueryData } = {},
 		query = {}
 	) {
-		const data = Array.from(arguments)[3]
+		const data = Array.from(arguments)[3] || {}
 		data.userId = userId
 		data.message = message
 		return this.https.post(`/locations/${locationId}/messages`, data, query)
