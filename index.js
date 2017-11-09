@@ -151,7 +151,7 @@ class Sprucebot {
 		data.userId = userId
 		data.message = message
 		if (data.webViewQueryData) {
-			data.webViewQueryData = encodeURIComponent(data.webViewQueryData)
+			data.webViewQueryData = JSON.stringify(data.webViewQueryData)
 		}
 		return this.https.post(`/locations/${locationId}/messages`, data, query)
 	}
