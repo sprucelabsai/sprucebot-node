@@ -3,6 +3,7 @@ const routes = require('./factories/routes')
 const wares = require('./factories/wares')
 const listeners = require('./factories/listeners')
 const Https = require('./https')
+const lang = require('./helpers/lang')
 
 /**
  * Politely tell someone they didn't define an arg
@@ -50,6 +51,7 @@ class Sprucebot {
 
 		// Setup skillskit helpers
 		this.skillskit = {
+			lang,
 			factories: {
 				context,
 				routes,
