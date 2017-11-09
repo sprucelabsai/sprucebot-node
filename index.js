@@ -101,6 +101,17 @@ class Sprucebot {
 	}
 
 	/**
+	 * Update for user who have been to this location
+	 *
+	 * @param {String} id
+	 * @param {Object} values
+	 * @returns {Promise}
+	 */
+	async updateUser(id, values) {
+		return this.https.patch('/users/' + userId, values)
+	}
+
+	/**
 	 * Get a location by id
 	 *
 	 * @param {String} locationId
@@ -139,6 +150,9 @@ class Sprucebot {
 		const data = Array.from(arguments)[3] || {}
 		data.userId = userId
 		data.message = message
+		if (data.webViewQueryData) {
+			data.webViewQueryData = encodeURIComponent(data.webViewQueryData)
+		}
 		return this.https.post(`/locations/${locationId}/messages`, data, query)
 	}
 
