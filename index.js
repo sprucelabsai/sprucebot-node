@@ -108,7 +108,7 @@ class Sprucebot {
 	 * @returns {Promise}
 	 */
 	async updateUser(id, values) {
-		return this.https.patch('/users/' + userId, values)
+		return this.https.patch('/users/' + id, values)
 	}
 
 	/**
