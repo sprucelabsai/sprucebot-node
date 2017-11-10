@@ -317,6 +317,22 @@ describe('API Tests', () => {
 		expect(matches[1].id).toEqual(meta2.id)
 	})
 
+	test('Sprucebot should be able to save meta data as arrays', async () => {
+		expect.assertions(2)
+		const sb = new Sprucebot(SKILL)
+		const value = ['go', 'team']
+		const meta = await sb.metaOrCreate('test-1', value, {
+			locationId: SPRUCE_ID
+		})
+
+		expect(meta.value).toEqual(value)
+
+		const meta2 = await sb.meta('test-1', {
+			locationId: SPRUCE_ID
+		})
+		expect(meta2.value).toEqual(value)
+	})
+
 	test('Sprucebot should be able to create a few metas and find some with $or with $contains match', async () => {
 		expect.assertions(3)
 		const sb = new Sprucebot(SKILL)
