@@ -34,6 +34,7 @@ class Sprucebot {
 		this.webhookUrl = serverUrl + '/hook'
 		this.iframeUrl = interfaceUrl
 		this.marketingUrl = interfaceUrl + '/marketing'
+		this._mutexes = {}
 
 		this.version = '1.0'
 		this.https = new Https({
@@ -165,25 +166,14 @@ class Sprucebot {
 	 * @param {Boolean} suppressErrors
 	 */
 	async metas(
-		{ key, locationId, userId, sortBy, limit } = {},
+		{ key, locationId, userId, sortBy, order, limit, value } = {},
 		suppressParseErrors = true
 	) {
-		// Get results as an array where values are JSON strings
-		const metas = await this.https.get('/data', Array.from(arguments)[0])
-
-		metas.forEach(meta => {
-			try {
-				meta.value = JSON.parse(meta.value)
-			} catch (err) {
-				if (suppressParseErrors) {
-					console.error('Failed to parse JSON value for meta.', err)
-				} else {
-					throw err
-				}
-			}
-		})
-
-		return metas
+		const query = Array.from(arguments)[0] || {}
+		if (query.value) {
+			query.value = JSON.stringify(query.value)
+		}
+		return this.https.get('/data', query)
 	}
 
 	/**
@@ -193,7 +183,11 @@ class Sprucebot {
 	 * @param {Object} query
 	 * @param {Boolean} suppressParseErrors
 	 */
-	async meta(key, { locationId, userId } = {}, suppressParseErrors = true) {
+	async meta(
+		key,
+		{ locationId, userId, value, sortBy, order } = {},
+		suppressParseErrors = true
+	) {
 		const args = Array.from(arguments)
 		const query = args[1] || {}
 		query.key = key
@@ -217,7 +211,6 @@ class Sprucebot {
 		}
 
 		const meta = await this.https.post('/data', data)
-		meta.value = JSON.parse(meta.value)
 		return meta
 	}
 
@@ -237,7 +230,6 @@ class Sprucebot {
 		}
 
 		const meta = await this.https.patch(`/data/${id}`, data)
-		meta.value = JSON.parse(meta.value)
 		return meta
 	}
 
@@ -303,6 +295,60 @@ class Sprucebot {
 	 */
 	async deleteMeta(id) {
 		return this.https.delete(`/data/${id}`)
+	}
+
+	/**
+	 * To stop race conditions, you can have requests wait before starting the next. 
+	 * 
+	 * @param {String} key 
+	 */
+	async wait(key) {
+		if (!this._mutexes[key]) {
+			this._mutexes[key] = {
+				promises: [],
+				resolvers: [],
+				count: 0
+			}
+		}
+
+		//track which we are on
+		this._mutexes[key].count++
+
+		//first is always auto resolved
+		if (this._mutexes[key].count === 1) {
+			this._mutexes[key].promises.push(new Promise(resolve => resolve()))
+			this._mutexes[key].resolvers.push(() => {})
+		} else {
+			let resolver = resolve => {
+				this._mutexes[key].resolvers.push(resolve)
+			}
+			let promise = new Promise(resolver)
+			this._mutexes[key].promises.push(promise)
+		}
+
+		return this._mutexes[key].promises[this._mutexes[key].count - 1]
+	}
+
+	/**
+	 * Long operation is complete, start up again.
+	 * 
+	 * @param {String} key 
+	 */
+	async go(key) {
+		if (this._mutexes[key]) {
+			//remove this promise
+			this._mutexes[key].promises.shift()
+			this._mutexes[key].resolvers.shift()
+			this._mutexes[key].count--
+
+			//if we are done, clear
+			if (this._mutexes[key].count === 0) {
+				delete this._mutexes[key]
+			} else {
+				//otherwise resolve the next promise
+				this._mutexes[key].resolvers[0]()
+			}
+		}
 	}
 }
 

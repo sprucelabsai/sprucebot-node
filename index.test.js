@@ -9,7 +9,7 @@ const TAYLOR_ID = '78245981-5022-49a7-b2f2-6ac687e0f3d1'
 const SKILL = {
 	id: '482D8B56-5223-43BF-8E7F-011509B9968A',
 	apiKey: 'DD16373A-9482-4E27-A4A3-77B2664F6C82',
-	host: 'dev-api.sprucebot.com',
+	host: 'local-api.sprucebot.com',
 	name: `Unit Test Skill - ${TIMESTAMP}`,
 	description: `This skill is for the tests that are run on pre-commit. ${TIMESTAMP}`,
 	interfaceUrl: `http://noop/${TIMESTAMP}`,
@@ -47,6 +47,16 @@ describe('API Tests', () => {
 			throw new Error(`Environment not reset for sb.skillUrl: ${sb.skillUrl}`)
 
 		//clear all meta data for this skill
+		const metas = await sb.metas({ limit: 200 })
+		await Promise.all(
+			metas.map(meta => {
+				return sb.deleteMeta(meta.id)
+			})
+		)
+	})
+
+	afterAll(async () => {
+		const sb = new Sprucebot(SKILL)
 		const metas = await sb.metas({ limit: 200 })
 		await Promise.all(
 			metas.map(meta => {
@@ -211,5 +221,133 @@ describe('API Tests', () => {
 		expect(upserted.id).toEqual(upserted2.id)
 		expect(upserted.id).toEqual(upserted3.id)
 		expect(upserted3.value).toEqual({ hello: 'world' })
+	})
+
+	test('Sprucebot should be able to create simple meta and fetch it', async () => {
+		expect.assertions(1)
+		const sb = new Sprucebot(SKILL)
+		const meta = await sb.createMeta('test-1', true)
+		const found = await sb.meta('test-1')
+
+		expect(meta.value).toEqual(found.value)
+	})
+
+	test('Sprucebot should be able to create complex meta and search against it', async () => {
+		expect.assertions(1)
+		const sb = new Sprucebot(SKILL)
+		const meta1 = await sb.createMeta('test-2', {
+			foo: 'bar'
+		})
+		const meta2 = await sb.createMeta('test-2', {
+			hello: 'world'
+		})
+
+		const matches = await sb.metas({
+			value: {
+				hello: 'world'
+			}
+		})
+
+		expect(meta2.id).toEqual(matches[0].id)
+	})
+
+	test('Sprucebot should be able to create even more complex meta and search against $contains', async () => {
+		expect.assertions(3)
+		const sb = new Sprucebot(SKILL)
+		const meta1 = await sb.createMeta('test-2', {
+			foo: 'bar',
+			bar: 'foo'
+		})
+		const meta2 = await sb.createMeta('test-2', {
+			hello: 'world',
+			world: 'hello'
+		})
+
+		const meta3 = await sb.createMeta('test-2', {
+			hello: 'world',
+			again: 'hello'
+		})
+
+		const matches = await sb.metas({
+			value: {
+				hello: 'world'
+			}
+		})
+
+		const matches2 = await sb.metas({
+			value: {
+				hello: 'world',
+				again: 'hello'
+			}
+		})
+
+		expect(matches).toHaveLength(2)
+		expect(matches2).toHaveLength(1)
+		expect(matches2[0].id).toEqual(meta3.id)
+	})
+
+	test('Sprucebot should be able to create a few metas and find some with $or with exact match', async () => {
+		expect.assertions(3)
+		const sb = new Sprucebot(SKILL)
+		const meta1 = await sb.createMeta('test-2', {
+			foo: 'bar'
+		})
+		const meta2 = await sb.createMeta('test-2', {
+			foo: 'world'
+		})
+		const meta3 = await sb.createMeta('test-2', {
+			foo: 'go'
+		})
+
+		const matches = await sb.metas({
+			value: {
+				$or: [
+					{
+						foo: 'bar'
+					},
+					{
+						foo: 'world'
+					}
+				]
+			}
+		})
+
+		expect(matches).toHaveLength(2)
+		expect(matches[0].id).toEqual(meta1.id)
+		expect(matches[1].id).toEqual(meta2.id)
+	})
+
+	test('Sprucebot should be able to create a few metas and find some with $or with $contains match', async () => {
+		expect.assertions(3)
+		const sb = new Sprucebot(SKILL)
+		const meta1 = await sb.createMeta('test-2', {
+			foo: 'bar',
+			hello: 'world'
+		})
+		const meta2 = await sb.createMeta('test-2', {
+			foo: 'world',
+			plus: 'one'
+		})
+		const meta3 = await sb.createMeta('test-2', {
+			foo: 'go',
+			bananas: 'apples'
+		})
+
+		const matches = await sb.metas({
+			value: {
+				$or: [
+					{
+						foo: 'bar'
+					},
+					{
+						foo: 'world'
+					}
+				]
+			}
+		})
+
+		expect(matches).toHaveLength(2)
+		expect(matches[0].id).toEqual(meta1.id)
+		expect(matches[1].id).toEqual(meta2.id)
 	})
 })
