@@ -371,7 +371,8 @@ describe('API Tests', () => {
 		expect.assertions(1)
 		const sb = new Sprucebot(SKILL)
 		const responses = await sb.emit(SPRUCE_ID, 'test-skill:test', {
-			taco: 'bravo'
+			taco: 'bravo',
+			userId: TAYLOR_ID
 		})
 		expect(responses).toBeTruthy() // anything but an exception is a win right now
 	})
