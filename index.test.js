@@ -9,7 +9,7 @@ const TAYLOR_ID = '78245981-5022-49a7-b2f2-6ac687e0f3d1'
 const SKILL = {
 	id: '482D8B56-5223-43BF-8E7F-011509B9968A',
 	apiKey: 'DD16373A-9482-4E27-A4A3-77B2664F6C82',
-	host: 'local-api.sprucebot.com',
+	host: 'dev-api.sprucebot.com',
 	name: `Unit Test Skill - ${TIMESTAMP}`,
 	description: `This skill is for the tests that are run on pre-commit. ${TIMESTAMP}`,
 	interfaceUrl: `http://noop/${TIMESTAMP}`,
@@ -365,5 +365,26 @@ describe('API Tests', () => {
 		expect(matches).toHaveLength(2)
 		expect(matches[0].id).toEqual(meta1.id)
 		expect(matches[1].id).toEqual(meta2.id)
+	})
+
+	test('Sprucebot should be able to emit custom events', async () => {
+		expect.assertions(1)
+		const sb = new Sprucebot(SKILL)
+		const responses = await sb.emit(SPRUCE_ID, 'test-skill:test', {
+			taco: 'bravo'
+		})
+		expect(responses).toBeTruthy() // anything but an exception is a win right now
+	})
+
+	test("Sprucebot should be NOT able to emit custom events that don't start with the slug `test-skill`", async () => {
+		expect.assertions(1)
+		const sb = new Sprucebot(SKILL)
+		try {
+			const responses = await sb.emit(SPRUCE_ID, 'test-skillz:test', {
+				taco: 'bravo'
+			})
+		} catch (err) {
+			expect(err.response.statusCode).toEqual(406)
+		}
 	})
 })

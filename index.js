@@ -7,7 +7,7 @@ const lang = require('./helpers/lang')
 
 /**
  * Politely tell someone they didn't define an arg
- * @param {string} name 
+ * @param {string} name
  */
 function required(name) {
 	throw new Error(
@@ -46,8 +46,11 @@ class Sprucebot {
 		})
 
 		console.log(
-			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nid : ${id} \nname : ${name}\n---------------------------------`
+			`🌲 Sprucebot🌲 Skills Kit API ${this.version}\n\napiKey : ${
+				apiKey
+			}, \nhost : ${host}, \nid : ${id} \nname : ${
+				name
+			}\n---------------------------------`
 		)
 
 		// Setup skillskit helpers
@@ -207,7 +210,7 @@ class Sprucebot {
 		const data = {
 			...(Array.from(arguments)[2] || {}),
 			key,
-			value: value ? JSON.stringify(value) : value
+			value
 		}
 
 		const meta = await this.https.post('/data', data)
@@ -216,17 +219,13 @@ class Sprucebot {
 
 	/**
 	 * Update some meta data by id
-	 * 
-	 * @param {String} id 
-	 * @param {Object} data 
+	 *
+	 * @param {String} id
+	 * @param {Object} data
 	 */
 	async updateMeta(id, { key, value, locationId, userId }) {
 		const data = {
 			...(Array.from(arguments)[1] || {})
-		}
-
-		if (value) {
-			data.value = JSON.stringify(value)
 		}
 
 		const meta = await this.https.patch(`/data/${id}`, data)
@@ -261,10 +260,10 @@ class Sprucebot {
 	}
 	/**
 	 * Creates a meta if it does not exist, updates it if it does
-	 * @param {String} key 
-	 * @param {*} value 
-	 * @param {Object} query 
-	 * @param {Boolean} suppressParseErrors 
+	 * @param {String} key
+	 * @param {*} value
+	 * @param {Object} query
+	 * @param {Boolean} suppressParseErrors
 	 */
 	async upsertMeta(
 		key,
@@ -298,9 +297,22 @@ class Sprucebot {
 	}
 
 	/**
-	 * To stop race conditions, you can have requests wait before starting the next. 
-	 * 
-	 * @param {String} key 
+	 * Emit a custom event. The response is the response from all skills
+	 *
+	 * @param {String} name
+	 * @param {Object} payload
+	 */
+	async emit(locationId, eventName, payload = {}) {
+		return this.https.post(`locations/${locationId}/emit`, {
+			eventName,
+			payload
+		})
+	}
+
+	/**
+	 * To stop race conditions, you can have requests wait before starting the next.
+	 *
+	 * @param {String} key
 	 */
 	async wait(key) {
 		if (!this._mutexes[key]) {
@@ -331,8 +343,8 @@ class Sprucebot {
 
 	/**
 	 * Long operation is complete, start up again.
-	 * 
-	 * @param {String} key 
+	 *
+	 * @param {String} key
 	 */
 	async go(key) {
 		if (this._mutexes[key]) {

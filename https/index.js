@@ -16,12 +16,12 @@ module.exports = class Https {
 	}
 
 	/**
-     * GET an endpoint.
-     *
-     * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${id}
-     * @param {Object} query Vanilla object that is converted into a query string
-     * @returns {Promise}
-     */
+	 * GET an endpoint.
+	 *
+	 * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${id}
+	 * @param {Object} query Vanilla object that is converted into a query string
+	 * @returns {Promise}
+	 */
 	async get(path, query) {
 		// everything is a promise
 		return new Promise((resolve, reject) => {
@@ -52,20 +52,20 @@ module.exports = class Https {
 	}
 
 	/**
-     * POST some data to the API. Override `method` to PATCH for patching.
-     *
-     * @param {String} path
-     * @param {Object} data
-     * @param {Object} query
-     * @param {String} method
-     * @returns {Promise}
-     */
+	 * POST some data to the API. Override `method` to PATCH for patching.
+	 *
+	 * @param {String} path
+	 * @param {Object} data
+	 * @param {Object} query
+	 * @param {String} method
+	 * @returns {Promise}
+	 */
 	async post(path, data, query, method = 'POST') {
 		return new Promise((resolve, reject) => {
 			// API Key must go with each request
 			const headers = {
 				'x-skill-api-key': this.apiKey,
-				'Content-Type': 'application/x-www-form-urlencoded'
+				'Content-Type': 'application/json'
 			}
 
 			const request = https.request(
@@ -86,8 +86,7 @@ module.exports = class Https {
 				reject(err)
 			})
 
-			request.write(url.serialize(data))
-			request.end()
+			request.end(JSON.stringify(data))
 		})
 	}
 
