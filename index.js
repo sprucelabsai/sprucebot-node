@@ -46,11 +46,8 @@ class Sprucebot {
 		})
 
 		console.log(
-			`🌲 Sprucebot🌲 Skills Kit API ${this.version}\n\napiKey : ${
-				apiKey
-			}, \nhost : ${host}, \nid : ${id} \nname : ${
-				name
-			}\n---------------------------------`
+			`🌲 Sprucebot🌲 Skills Kit API ${this
+				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nid : ${id} \nname : ${name}\n---------------------------------`
 		)
 
 		// Setup skillskit helpers
@@ -175,6 +172,9 @@ class Sprucebot {
 		const query = Array.from(arguments)[0] || {}
 		if (query.value) {
 			query.value = JSON.stringify(query.value)
+		}
+		if (query.userId) {
+			query.userId = JSON.stringify(query.userId)
 		}
 		return this.https.get('/data', query)
 	}

@@ -14,7 +14,7 @@ module.exports = {
 	},
 
 	/**
-     * Builds the path to the endpoint off all the crutial tidbits
+     * Builds the path to the endpoint off all the crucial tidbits
      */
 	build: function(path, query, version, skillId) {
 		// build url with query and make sure there are no double /

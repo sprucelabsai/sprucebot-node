@@ -6,6 +6,9 @@ const path = require('path')
 const TIMESTAMP = new Date().getTime()
 const SPRUCE_ID = '1975559c-e071-4198-8ab3-eccbeb00e1d0'
 const TAYLOR_ID = '78245981-5022-49a7-b2f2-6ac687e0f3d1'
+const SHANE_ID = 'EAEF3EC4-D82F-4367-89F3-E8694A7BD3D4'
+const RANDY_ID = 'CA6D33A0-FDCF-43AE-B344-5076C8675814'
+
 const SKILL = {
 	id: '482D8B56-5223-43BF-8E7F-011509B9968A',
 	apiKey: 'DD16373A-9482-4E27-A4A3-77B2664F6C82',
@@ -207,6 +210,19 @@ describe('API Tests', () => {
 		expect(upserted3.value).toEqual(value)
 	})
 
+	test('Sprucebot should be able to handle true/values as meta values', async () => {
+		expect.assertions(3)
+		const sb = new Sprucebot(SKILL)
+		let meta = await sb.createMeta('test-1', true)
+		expect(meta.value).toEqual(true)
+
+		meta = await sb.updateMeta(meta.id, { value: false })
+		expect(meta.value).toEqual(false)
+
+		meta = await sb.createMeta('test-3', false)
+		expect(meta.value).toEqual(false)
+	})
+
 	test('Sprucebot should be able to upsert metadata', async () => {
 		expect.assertions(4)
 
@@ -313,8 +329,8 @@ describe('API Tests', () => {
 		})
 
 		expect(matches).toHaveLength(2)
-		expect(matches[0].id).toEqual(meta1.id)
-		expect(matches[1].id).toEqual(meta2.id)
+		expect([meta1.id, meta2.id]).toContain(matches[0].id)
+		expect([meta1.id, meta2.id]).toContain(matches[1].id)
 	})
 
 	test('Sprucebot should be able to save meta data as arrays', async () => {
@@ -363,8 +379,8 @@ describe('API Tests', () => {
 		})
 
 		expect(matches).toHaveLength(2)
-		expect(matches[0].id).toEqual(meta1.id)
-		expect(matches[1].id).toEqual(meta2.id)
+		expect([meta1.id, meta2.id]).toContain(matches[0].id)
+		expect([meta1.id, meta2.id]).toContain(matches[1].id)
 	})
 
 	test('Sprucebot should be able to emit custom events', async () => {
@@ -387,5 +403,53 @@ describe('API Tests', () => {
 		} catch (err) {
 			expect(err.response.statusCode).toEqual(406)
 		}
+	})
+
+	test('Sprucebot should be able to filter by many teammates', async () => {
+		expect.assertions(3)
+		const sb = new Sprucebot(SKILL)
+		const meta1 = await sb.createMeta(
+			'test-2',
+			{
+				foo: 'bar',
+				hello: 'world'
+			},
+			{
+				userId: SHANE_ID,
+				locationId: SPRUCE_ID
+			}
+		)
+		const meta2 = await sb.createMeta(
+			'test-2',
+			{
+				foo: 'world',
+				plus: 'one'
+			},
+			{
+				userId: RANDY_ID,
+				locationId: SPRUCE_ID
+			}
+		)
+		const meta3 = await sb.createMeta(
+			'test-2',
+			{
+				foo: 'go',
+				bananas: 'apples'
+			},
+			{
+				userId: TAYLOR_ID,
+				locationId: SPRUCE_ID
+			}
+		)
+
+		const metas = await sb.metas({
+			userId: {
+				$or: [SHANE_ID, RANDY_ID]
+			}
+		})
+
+		expect(metas).toHaveLength(2)
+		expect(metas[0].UserId).toEqual(SHANE_ID.toLowerCase())
+		expect(metas[1].UserId).toEqual(RANDY_ID.toLowerCase())
 	})
 })
