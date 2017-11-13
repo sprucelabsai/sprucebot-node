@@ -12,7 +12,7 @@ const RANDY_ID = 'CA6D33A0-FDCF-43AE-B344-5076C8675814'
 const SKILL = {
 	id: '482D8B56-5223-43BF-8E7F-011509B9968A',
 	apiKey: 'DD16373A-9482-4E27-A4A3-77B2664F6C82',
-	host: 'dev-api.sprucebot.com',
+	host: 'local-api.sprucebot.com',
 	name: `Unit Test Skill - ${TIMESTAMP}`,
 	description: `This skill is for the tests that are run on pre-commit. ${TIMESTAMP}`,
 	interfaceUrl: `http://noop/${TIMESTAMP}`,
@@ -144,7 +144,7 @@ describe('API Tests', () => {
 	})
 
 	test('Sprucebot should be able to create meta data for a location+user and find it', async () => {
-		expect.assertions(9)
+		expect.assertions(10)
 
 		const sb = new Sprucebot(SKILL)
 
@@ -170,6 +170,14 @@ describe('API Tests', () => {
 		expect(meta2.id).toEqual(luckyNumbers.id)
 		expect(meta2.LocationId).toEqual(luckyNumbers.LocationId)
 		expect(meta2.UserId).toEqual(luckyNumbers.UserId)
+
+		// try some find or creat
+		const meta3 = await sb.metaOrCreate('rewards', 'Free Shoes!', {
+			locationId: SPRUCE_ID,
+			userId: TAYLOR_ID
+		})
+
+		expect(meta3.UserId).toEqual(TAYLOR_ID)
 	})
 
 	test('Sprucebot should be able to update meta data', async () => {

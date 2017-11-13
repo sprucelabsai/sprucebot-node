@@ -169,7 +169,7 @@ class Sprucebot {
 		{ key, locationId, userId, sortBy, order, limit, value } = {},
 		suppressParseErrors = true
 	) {
-		const query = Array.from(arguments)[0] || {}
+		const query = { ...(Array.from(arguments)[0] || {}) }
 		if (query.value) {
 			query.value = JSON.stringify(query.value)
 		}
@@ -192,7 +192,7 @@ class Sprucebot {
 		suppressParseErrors = true
 	) {
 		const args = Array.from(arguments)
-		const query = args[1] || {}
+		const query = { ...(args[1] || {}) }
 		query.key = key
 		query.limit = 1
 		const metas = await this.metas(query)
