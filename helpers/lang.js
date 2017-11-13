@@ -9,7 +9,7 @@ module.exports = {
 			console.info('No lang override specified.')
 		}
 	},
-	get(key, context = {}) {
+	getText(key, context = {}) {
 		const translations = {
 			...this.lang,
 			...this.overrides,
