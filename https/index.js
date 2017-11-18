@@ -1,5 +1,6 @@
 const url = require('../utilities/url')
 const https = require('https')
+var debug = require('debug')('sprucebot-node')
 
 module.exports = class Https {
 	constructor({ host, apiKey, id, version, allowSelfSignedCerts = false }) {
@@ -81,11 +82,6 @@ module.exports = class Https {
 				}
 			)
 
-			// handle error with request
-			request.on('error', err => {
-				reject(err)
-			})
-
 			request.end(JSON.stringify(data))
 		})
 	}
@@ -125,10 +121,6 @@ module.exports = class Https {
 					this.handleResponse(request, response, resolve, reject)
 				}
 			)
-			// handle error with request
-			request.on('error', err => {
-				reject(err)
-			})
 
 			request.write('')
 			request.end()
@@ -148,8 +140,14 @@ module.exports = class Https {
 		let body = ''
 		response.on('data', d => (body += d))
 
+		request.on('error', err => {
+			debug(`REQUEST ERROR: ${request.method} ${request.path}`, err)
+			reject(err)
+		})
+
 		// Handle errors
 		response.on('error', err => {
+			debug(`RESPONSE ERROR: ${request.method} ${request.path}`, err)
 			reject(err)
 		})
 
@@ -170,6 +168,7 @@ module.exports = class Https {
 					resolve(parsed)
 				}
 			} catch (err) {
+				debug(`RESPONSE ERROR: ${request.method} ${request.path}`, err)
 				reject(err)
 			}
 		})
