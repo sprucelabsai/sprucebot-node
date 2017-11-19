@@ -1,9 +1,4 @@
-const context = require('./factories/context')
-const routes = require('./factories/routes')
-const wares = require('./factories/wares')
-const listeners = require('./factories/listeners')
 const Https = require('./https')
-const lang = require('./helpers/lang')
 
 /**
  * Politely tell someone they didn't define an arg
@@ -47,19 +42,8 @@ class Sprucebot {
 
 		console.log(
 			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nid : ${id} \nname : ${name}\n---------------------------------`
+				.version}\n\napiKey : ${apiKey} \nhost : ${host} \nid : ${id} \nname : ${name}\n---------------------------------`
 		)
-
-		// Setup skillskit helpers
-		this.skillskit = {
-			lang,
-			factories: {
-				context,
-				routes,
-				wares,
-				listeners
-			}
-		}
 	}
 
 	/**
