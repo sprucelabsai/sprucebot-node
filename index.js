@@ -42,7 +42,10 @@ class Sprucebot {
 
 		console.log(
 			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\napiKey : ${apiKey} \nhost : ${host} \nid : ${id} \nname : ${name}\n---------------------------------`
+				.version}\n\nhost : ${host} \nid : ${id} \napiKey : ${apiKey.replace(
+				/./g,
+				'*'
+			)} \nname : ${name}\n---------------------------------`
 		)
 	}
 
@@ -131,7 +134,7 @@ class Sprucebot {
 		locationId,
 		userId,
 		message,
-		{ linksToWebView, webViewQueryData } = {},
+		{ linksToWebView, webViewQueryData, payload } = {},
 		query = {}
 	) {
 		const data = Array.from(arguments)[3] || {}
