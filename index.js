@@ -26,7 +26,7 @@ class Sprucebot {
 		this.name = name
 		this.description = description
 		this.icon = svgIcon
-		this.webhookUrl = serverUrl + '/hook'
+		this.webhookUrl = serverUrl + '/hook.json'
 		this.iframeUrl = interfaceUrl
 		this.marketingUrl = interfaceUrl + '/marketing'
 		this._mutexes = {}
