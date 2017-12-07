@@ -1,13 +1,12 @@
 const Https = require('./https')
 
+const errorMsg = `You are missing some params! Make sure you set ${name} properly (maybe .env) 🤷🏼‍`
 /**
  * Politely tell someone they didn't define an arg
  * @param {string} name
  */
 function required(name) {
-	throw new Error(
-		`You are missing some params! Make sure you set ${name} properly`
-	)
+	throw new Error(errorMsg)
 }
 
 class Sprucebot {
@@ -22,16 +21,18 @@ class Sprucebot {
 		svgIcon = required('svgIcon'),
 		allowSelfSignedCerts = false
 	}) {
-		// Setup http(s) class with everything it needs to talk to api
-		this.name = name
-		this.description = description
-		this.icon = svgIcon
-		this.webhookUrl = serverUrl + '/hook.json'
-		this.iframeUrl = interfaceUrl
-		this.marketingUrl = interfaceUrl + '/marketing'
+		this.name = name || required('name')
+		this.description = description || required('description')
+		this.icon = svgIcon || required('svgIcon')
+		this.webhookUrl = (serverUrl || required('serverUrl')) + '/hook.json'
+		this.iframeUrl = interfaceUrl || required('interfaceUrl')
+		this.marketingUrl =
+			(interfaceUrl || required('interfaceUrl')) + '/marketing'
 		this._mutexes = {}
 
-		this.version = '1.0'
+		this.version = '1.0' // maybe pull from package.json?
+
+		// Setup http(s) class with everything it needs to talk to api
 		this.https = new Https({
 			host,
 			apiKey,

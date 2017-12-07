@@ -6,6 +6,10 @@
       "**/node_modules": true
     },
     "cSpell.words": [
-      "upsert"
+      "POST'ing",
+      "metas",
+      "mutexes",
+      "upsert",
+      "webhook"
     ]
   }
