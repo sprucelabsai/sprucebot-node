@@ -1,12 +1,13 @@
 const Https = require('./https')
 
-const errorMsg = `You are missing some params! Make sure you set ${name} properly (maybe .env) 🤷🏼‍`
 /**
  * Politely tell someone they didn't define an arg
  * @param {string} name
  */
 function required(name) {
-	throw new Error(errorMsg)
+	throw new Error(
+		`You are missing some params! Make sure you set ${name} properly (maybe .env) 🤷🏼‍`
+	)
 }
 
 class Sprucebot {
