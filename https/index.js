@@ -6,7 +6,7 @@ module.exports = class Https {
 	constructor({ host, apiKey, id, version, allowSelfSignedCerts = false }) {
 		if (!host || !apiKey || !id || !version) {
 			throw new Error(
-				'You gotta pass host, apiKey, id, and version to the Http constructor'
+				'You gotta pass host, apiKey, id, and version to the Http constructor.'
 			)
 		}
 		this.host = host

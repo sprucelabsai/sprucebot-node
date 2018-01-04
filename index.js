@@ -22,6 +22,10 @@ class Sprucebot {
 		svgIcon = required('svgIcon'),
 		allowSelfSignedCerts = false
 	}) {
+		const hostMatches = host.match(/^(https?\:\/\/|)([^\/:?#]+)(?:[\/:?#]|$)/i)
+		const cleanedHost =
+			hostMatches && hostMatches[1] ? hostMatches[2] : required('host')
+
 		this.name = name || required('name')
 		this.description = description || required('description')
 		this.icon = svgIcon || required('svgIcon')
@@ -35,7 +39,7 @@ class Sprucebot {
 
 		// Setup http(s) class with everything it needs to talk to api
 		this.https = new Https({
-			host,
+			host: cleanedHost,
 			apiKey,
 			id,
 			version: this.version,
@@ -44,7 +48,7 @@ class Sprucebot {
 
 		console.log(
 			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\nhost : ${host} \nid : ${id} \napiKey : ${apiKey.replace(
+				.version}\n\nhost : ${cleanedHost} \nid : ${id} \napiKey : ${apiKey.replace(
 				/./g,
 				'*'
 			)} \nname : ${name}\n---------------------------------`
