@@ -24,7 +24,7 @@ class Sprucebot {
 	}) {
 		const hostMatches = host.match(/^(https?\:\/\/|)([^\/:?#]+)(?:[\/:?#]|$)/i)
 		const cleanedHost =
-			hostMatches && hostMatches[1] ? hostMatches[2] : required('host')
+			hostMatches && hostMatches[2] ? hostMatches[2] : required('host')
 
 		this.name = name || required('name')
 		this.description = description || required('description')
