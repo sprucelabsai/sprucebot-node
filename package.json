@@ -21,15 +21,6 @@
         "yarn": "^1.2.1"
     },
     "jest": {
-        "clearMocks": true,
-        "testPathIgnorePatterns": [
-            "/config/"
-        ],
-        "collectCoverageFrom": [
-            "**/*.js",
-            "!**/node_modules/**",
-            "!**/__TEST__/**"
-        ],
         "coverageDirectory": "./coverage/",
         "collectCoverage": true
     }

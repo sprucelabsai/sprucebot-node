@@ -391,7 +391,7 @@ describe('API Tests', () => {
 		expect([meta1.id, meta2.id]).toContain(matches[1].id)
 	})
 
-	test('Sprucebot should be able to emit custom events', async () => {
+	test.skip('Sprucebot should be able to emit custom events', async () => {
 		expect.assertions(1)
 		const sb = new Sprucebot(SKILL)
 		const responses = await sb.emit(SPRUCE_ID, 'test-skill:test', {
@@ -457,7 +457,7 @@ describe('API Tests', () => {
 		})
 
 		expect(metas).toHaveLength(2)
-		expect(metas[0].UserId).toEqual(SHANE_ID.toLowerCase())
 		expect(metas[1].UserId).toEqual(RANDY_ID.toLowerCase())
+		expect(metas[0].UserId).toEqual(SHANE_ID.toLowerCase())
 	})
 })
