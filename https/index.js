@@ -1,33 +1,28 @@
 const url = require('../utilities/url')
 const https = require('https')
+var debug = require('debug')('sprucebot-node')
 
 module.exports = class Https {
-	constructor({
-		host,
-		apiKey,
-		skillId,
-		version,
-		allowSelfSignedCerts = false
-	}) {
-		if (!host || !apiKey || !skillId || !version) {
+	constructor({ host, apiKey, id, version, allowSelfSignedCerts = false }) {
+		if (!host || !apiKey || !id || !version) {
 			throw new Error(
-				'You gotta pass host, apiKey, skillId, and version to the Http constructor'
+				'You gotta pass host, apiKey, id, and version to the Http constructor.'
 			)
 		}
 		this.host = host
 		this.apiKey = apiKey
-		this.skillId = skillId
+		this.id = id
 		this.version = version
 		this.allowSelfSignedCerts = allowSelfSignedCerts
 	}
 
 	/**
-     * GET an endpoint.
-     *
-     * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${skillId}
-     * @param {Object} query Vanilla object that is converted into a query string
-     * @returns {Promise}
-     */
+	 * GET an endpoint.
+	 *
+	 * @param {String} url Path to the endpoint you want to hit. Do NOT include /api/${version}/skills/${id}
+	 * @param {Object} query Vanilla object that is converted into a query string
+	 * @returns {Promise}
+	 */
 	async get(path, query) {
 		// everything is a promise
 		return new Promise((resolve, reject) => {
@@ -39,7 +34,7 @@ module.exports = class Https {
 			const request = https.request(
 				{
 					host: this.host,
-					path: url.build(path, query, this.version, this.skillId),
+					path: url.build(path, query, this.version, this.id),
 					rejectUnauthorized: !this.allowSelfSignedCerts,
 					headers
 				},
@@ -58,20 +53,20 @@ module.exports = class Https {
 	}
 
 	/**
-     * POST some data to the API. Override `method` to PATCH for patching.
-     *
-     * @param {String} path
-     * @param {Object} data
-     * @param {Object} query
-     * @param {String} method
-     * @returns {Promise}
-     */
+	 * POST some data to the API. Override `method` to PATCH for patching.
+	 *
+	 * @param {String} path
+	 * @param {Object} data
+	 * @param {Object} query
+	 * @param {String} method
+	 * @returns {Promise}
+	 */
 	async post(path, data, query, method = 'POST') {
 		return new Promise((resolve, reject) => {
 			// API Key must go with each request
 			const headers = {
 				'x-skill-api-key': this.apiKey,
-				'Content-Type': 'application/x-www-form-urlencoded'
+				'Content-Type': 'application/json'
 			}
 
 			const request = https.request(
@@ -80,20 +75,14 @@ module.exports = class Https {
 					host: this.host,
 					headers,
 					rejectUnauthorized: !this.allowSelfSignedCerts,
-					path: url.build(path, query, this.version, this.skillId)
+					path: url.build(path, query, this.version, this.id)
 				},
 				response => {
 					this.handleResponse(request, response, resolve, reject)
 				}
 			)
 
-			// handle error with request
-			request.on('error', err => {
-				reject(err)
-			})
-
-			request.write(url.serialize(data))
-			request.end()
+			request.end(JSON.stringify(data))
 		})
 	}
 
@@ -126,16 +115,12 @@ module.exports = class Https {
 					host: this.host,
 					headers,
 					rejectUnauthorized: !this.allowSelfSignedCerts,
-					path: url.build(path, query, this.version, this.skillId)
+					path: url.build(path, query, this.version, this.id)
 				},
 				response => {
 					this.handleResponse(request, response, resolve, reject)
 				}
 			)
-			// handle error with request
-			request.on('error', err => {
-				reject(err)
-			})
 
 			request.write('')
 			request.end()
@@ -155,8 +140,14 @@ module.exports = class Https {
 		let body = ''
 		response.on('data', d => (body += d))
 
+		request.on('error', err => {
+			debug(`REQUEST ERROR: ${request.method} ${request.path}`, err)
+			reject(err)
+		})
+
 		// Handle errors
 		response.on('error', err => {
+			debug(`RESPONSE ERROR: ${request.method} ${request.path}`, err)
 			reject(err)
 		})
 
@@ -177,6 +168,7 @@ module.exports = class Https {
 					resolve(parsed)
 				}
 			} catch (err) {
+				debug(`RESPONSE ERROR: ${request.method} ${request.path}`, err)
 				reject(err)
 			}
 		})

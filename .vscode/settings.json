@@ -4,5 +4,12 @@
     "eslint.autoFixOnSave": true,
     "search.exclude": {
       "**/node_modules": true
-    }
+    },
+    "cSpell.words": [
+      "POST'ing",
+      "metas",
+      "mutexes",
+      "upsert",
+      "webhook"
+    ]
   }

@@ -1,59 +1,58 @@
-const context = require('./factories/context')
-const routes = require('./factories/routes')
-const wares = require('./factories/wares')
 const Https = require('./https')
 
 /**
  * Politely tell someone they didn't define an arg
- * @param {string} name 
+ * @param {string} name
  */
-function argError(name) {
+function required(name) {
 	throw new Error(
-		`You are missing some params! Make sure you set ${name} properly`
+		`You are missing some params! Make sure you set ${name} properly (maybe .env) 🤷🏼‍`
 	)
 }
 
 class Sprucebot {
 	constructor({
-		apiKey = argError('apiKey'),
-		skillId = argError('apiKey'),
-		host = argError('apiKey'),
-		name = argError('apiKey'),
-		description = argError('apiKey'),
-		skillUrl = argError('apiKey'),
-		svgIcon = argError('apiKey'),
+		apiKey = required('apiKey'),
+		id = required('id'),
+		host = required('host'),
+		name = required('name'),
+		description = required('description'),
+		interfaceUrl = required('interfaceUrl'),
+		serverUrl = required('serverUrl'),
+		svgIcon = required('svgIcon'),
 		allowSelfSignedCerts = false
 	}) {
-		// Setup http(s) class with everything it needs to talk to api
-		this.name = name
-		this.description = description
-		this.icon = svgIcon
-		this.webhookUrl = skillUrl + '/hook'
-		this.iframeUrl = skillUrl
-		this.marketingUrl = skillUrl + '/marketing'
+		const hostMatches = host.match(/^(https?\:\/\/|)([^\/:?#]+)(?:[\/:?#]|$)/i)
+		const cleanedHost =
+			hostMatches && hostMatches[2] ? hostMatches[2] : required('host')
 
-		this.version = '1.0'
+		this.name = name || required('name')
+		this.description = description || required('description')
+		this.icon = svgIcon || required('svgIcon')
+		this.webhookUrl = (serverUrl || required('serverUrl')) + '/hook.json'
+		this.iframeUrl = interfaceUrl || required('interfaceUrl')
+		this.marketingUrl =
+			(interfaceUrl || required('interfaceUrl')) + '/marketing'
+		this._mutexes = {}
+
+		this.version = '1.0' // maybe pull from package.json?
+
+		// Setup http(s) class with everything it needs to talk to api
 		this.https = new Https({
-			host,
+			host: cleanedHost,
 			apiKey,
-			skillId,
+			id,
 			version: this.version,
 			allowSelfSignedCerts
 		})
 
 		console.log(
 			`🌲 Sprucebot🌲 Skills Kit API ${this
-				.version}\n\napiKey : ${apiKey}, \nhost : ${host}, \nskillId : ${skillId} \nname : ${name}\n---------------------------------`
+				.version}\n\nhost : ${cleanedHost} \nid : ${id} \napiKey : ${apiKey.replace(
+				/./g,
+				'*'
+			)} \nname : ${name}\n---------------------------------`
 		)
-
-		// Setup skillskit helpers
-		this.skillskit = {
-			factories: {
-				context,
-				routes,
-				wares
-			}
-		}
 	}
 
 	/**
@@ -98,6 +97,17 @@ class Sprucebot {
 	}
 
 	/**
+	 * Update for user who have been to this location
+	 *
+	 * @param {String} id
+	 * @param {Object} values
+	 * @returns {Promise}
+	 */
+	async updateUser(id, values) {
+		return this.https.patch('/users/' + id, values)
+	}
+
+	/**
 	 * Get a location by id
 	 *
 	 * @param {String} locationId
@@ -130,12 +140,15 @@ class Sprucebot {
 		locationId,
 		userId,
 		message,
-		{ linksToWebView, webViewQueryData } = {},
+		{ linksToWebView, webViewQueryData, payload } = {},
 		query = {}
 	) {
-		const data = Array.from(arguments)[3]
+		const data = Array.from(arguments)[3] || {}
 		data.userId = userId
 		data.message = message
+		if (data.webViewQueryData) {
+			data.webViewQueryData = JSON.stringify(data.webViewQueryData)
+		}
 		return this.https.post(`/locations/${locationId}/messages`, data, query)
 	}
 
@@ -146,25 +159,17 @@ class Sprucebot {
 	 * @param {Boolean} suppressErrors
 	 */
 	async metas(
-		{ key, locationId, userId, sortBy, limit } = {},
+		{ key, locationId, userId, sortBy, order, limit, value } = {},
 		suppressParseErrors = true
 	) {
-		// Get results as an array where values are JSON strings
-		const metas = await this.https.get('/data', Array.from(arguments)[0])
-
-		metas.forEach(meta => {
-			try {
-				meta.value = JSON.parse(meta.value)
-			} catch (err) {
-				if (suppressParseErrors) {
-					console.error('Failed to parse JSON value for meta.', err)
-				} else {
-					throw err
-				}
-			}
-		})
-
-		return metas
+		const query = { ...(Array.from(arguments)[0] || {}) }
+		if (query.value) {
+			query.value = JSON.stringify(query.value)
+		}
+		if (query.userId) {
+			query.userId = JSON.stringify(query.userId)
+		}
+		return this.https.get('/data', query)
 	}
 
 	/**
@@ -174,9 +179,13 @@ class Sprucebot {
 	 * @param {Object} query
 	 * @param {Boolean} suppressParseErrors
 	 */
-	async meta(key, { locationId, userId } = {}, suppressParseErrors = true) {
+	async meta(
+		key,
+		{ locationId, userId, value, sortBy, order } = {},
+		suppressParseErrors = true
+	) {
 		const args = Array.from(arguments)
-		const query = args[1] || {}
+		const query = { ...(args[1] || {}) }
 		query.key = key
 		query.limit = 1
 		const metas = await this.metas(query)
@@ -194,31 +203,25 @@ class Sprucebot {
 		const data = {
 			...(Array.from(arguments)[2] || {}),
 			key,
-			value: value ? JSON.stringify(value) : value
+			value
 		}
 
 		const meta = await this.https.post('/data', data)
-		meta.value = JSON.parse(meta.value)
 		return meta
 	}
 
 	/**
 	 * Update some meta data by id
-	 * 
-	 * @param {String} id 
-	 * @param {Object} data 
+	 *
+	 * @param {String} id
+	 * @param {Object} data
 	 */
 	async updateMeta(id, { key, value, locationId, userId }) {
 		const data = {
 			...(Array.from(arguments)[1] || {})
 		}
 
-		if (value) {
-			data.value = JSON.stringify(value)
-		}
-
 		const meta = await this.https.patch(`/data/${id}`, data)
-		meta.value = JSON.parse(meta.value)
 		return meta
 	}
 
@@ -226,6 +229,7 @@ class Sprucebot {
 	 * Fetch some meta. Create it if it does not exist
 	 *
 	 * @param {String} key
+	 * @param {*} value
 	 * @param {Object} query
 	 * @param {Boolean} suppressParseErrors
 	 */
@@ -244,7 +248,32 @@ class Sprucebot {
 		// not found, create it
 		if (!meta) {
 			meta = await this.createMeta(key, value, Array.from(arguments)[2])
-		} else if (JSON.stringify(meta.value) != JSON.stringify(value)) {
+		}
+		return meta
+	}
+	/**
+	 * Creates a meta if it does not exist, updates it if it does
+	 * @param {String} key
+	 * @param {*} value
+	 * @param {Object} query
+	 * @param {Boolean} suppressParseErrors
+	 */
+	async upsertMeta(
+		key,
+		value,
+		{ locationId, userId } = {},
+		suppressParseErrors = true
+	) {
+		let meta = await this.meta(
+			key,
+			Array.from(arguments)[2],
+			suppressParseErrors
+		)
+
+		// not found, create it
+		if (!meta) {
+			meta = await this.createMeta(key, value, Array.from(arguments)[2])
+		} else if (JSON.stringify(meta.value) !== JSON.stringify(value)) {
 			//found, but value has changed
 			meta = await this.updateMeta(meta.id, { value: value })
 		}
@@ -258,6 +287,73 @@ class Sprucebot {
 	 */
 	async deleteMeta(id) {
 		return this.https.delete(`/data/${id}`)
+	}
+
+	/**
+	 * Emit a custom event. The response is the response from all skills
+	 *
+	 * @param {String} name
+	 * @param {Object} payload
+	 */
+	async emit(locationId, eventName, payload = {}) {
+		return this.https.post(`locations/${locationId}/emit`, {
+			eventName,
+			payload
+		})
+	}
+
+	/**
+	 * To stop race conditions, you can have requests wait before starting the next.
+	 *
+	 * @param {String} key
+	 */
+	async wait(key) {
+		if (!this._mutexes[key]) {
+			this._mutexes[key] = {
+				promises: [],
+				resolvers: [],
+				count: 0
+			}
+		}
+
+		//track which we are on
+		this._mutexes[key].count++
+
+		//first is always auto resolved
+		if (this._mutexes[key].count === 1) {
+			this._mutexes[key].promises.push(new Promise(resolve => resolve()))
+			this._mutexes[key].resolvers.push(() => {})
+		} else {
+			let resolver = resolve => {
+				this._mutexes[key].resolvers.push(resolve)
+			}
+			let promise = new Promise(resolver)
+			this._mutexes[key].promises.push(promise)
+		}
+
+		return this._mutexes[key].promises[this._mutexes[key].count - 1]
+	}
+
+	/**
+	 * Long operation is complete, start up again.
+	 *
+	 * @param {String} key
+	 */
+	async go(key) {
+		if (this._mutexes[key]) {
+			//remove this promise
+			this._mutexes[key].promises.shift()
+			this._mutexes[key].resolvers.shift()
+			this._mutexes[key].count--
+
+			//if we are done, clear
+			if (this._mutexes[key].count === 0) {
+				delete this._mutexes[key]
+			} else {
+				//otherwise resolve the next promise
+				this._mutexes[key].resolvers[0]()
+			}
+		}
 	}
 }
 
