@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "scripts": {
         "lint": "eslint '**/**/*{.js}'",
-        "test": "jest --coverage",
+        "test": "jest",
         "precommit": "npm run lint",
         "prepush": "npm run lint && npm run test"
     },
@@ -29,6 +29,7 @@
             "!**/node_modules/**",
             "!**/__TEST__/**"
         ],
-        "coverageDirectory": "coverage"
+        "coverageDirectory": "./coverage/",
+        "collectCoverage": true
     }
 }
