@@ -153,6 +153,18 @@ class Sprucebot {
 	}
 
 	/**
+	 * ONLY APPLIES TO SKILLS THAT ARE GLOBAL (are not attached to a location).  
+	 * This allows Sprucebot to communicate to business owners without them 
+	 * actually needing any skills enabled. Core usage only. 
+	 * 
+	 * @param {String} userId 
+	 * @param {String} message 
+	 */
+	async messageGlobally(userId, message) {
+		return this.https.post('/messages', { userId, message })
+	}
+
+	/**
 	 * Get a bunch of meta data at once
 	 *
 	 * @param {Object} query
