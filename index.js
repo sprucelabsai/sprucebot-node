@@ -205,6 +205,15 @@ class Sprucebot {
 	}
 
 	/**
+	 * Get skill meta data by id
+	 * 
+	 * @param {String} id 
+	 */
+	async metaById(id) {
+		return this.https.get(`/data/${id}`)
+	}
+
+	/**
 	 * Create a meta data record.
 	 *
 	 * @param {String} key
