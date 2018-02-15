@@ -83,6 +83,16 @@ class Sprucebot {
 	}
 
 	/**
+	 * Get a user without a location. GLOBAL SKILLS ONLY
+	 * 
+	 * @param {String} userId 
+	 * @param {Object} Optional query stirng to be added to the request
+	 */
+	async globalUser(userId, query) {
+		return this.https.get(`/users/${userId}`, query)
+	}
+
+	/**
 	 * Search for users who have been to this location
 	 *
 	 * @param {String} locationId
@@ -160,7 +170,7 @@ class Sprucebot {
 	 * @param {String} userId 
 	 * @param {String} message 
 	 */
-	async messageGlobally(userId, message) {
+	async globalMessage(userId, message) {
 		return this.https.post('/messages', { userId, message })
 	}
 
@@ -209,8 +219,8 @@ class Sprucebot {
 	 * 
 	 * @param {String} id 
 	 */
-	async metaById(id) {
-		return this.https.get(`/data/${id}`)
+	async metaById(id, { locationId, userId } = {}) {
+		return this.https.get(`/data/${id}`, Array.from(arguments)[1])
 	}
 
 	/**
