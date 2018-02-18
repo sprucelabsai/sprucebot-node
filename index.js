@@ -191,6 +191,10 @@ class Sprucebot {
 		if (query.userId) {
 			query.userId = JSON.stringify(query.userId)
 		}
+
+		if (query.locationId) {
+			query.locationId = JSON.stringify(query.locationId)
+		}
 		return this.https.get('/data', query)
 	}
 
