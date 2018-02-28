@@ -67,7 +67,14 @@ class Sprucebot {
 			iframeUrl: this.iframeUrl,
 			marketingUrl: this.marketingUrl
 		}
-		return this.https.patch('/', data)
+		const results = await this.https.patch('/', data)
+		const database = await this.provisionDatabase()
+
+		return { ...results, database }
+	}
+
+	async provisionDatabase() {
+		return this.https.get('/database/provision')
 	}
 
 	/**
