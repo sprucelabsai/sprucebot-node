@@ -20,7 +20,8 @@ class Sprucebot {
 		interfaceUrl = required('interfaceUrl'),
 		serverUrl = required('serverUrl'),
 		svgIcon = required('svgIcon'),
-		allowSelfSignedCerts = false
+		allowSelfSignedCerts = false,
+		dbEnabled = false
 	}) {
 		const hostMatches = host.match(/^(https?\:\/\/|)([^\/:?#]+)(?:[\/:?#]|$)/i)
 		const cleanedHost =
@@ -33,6 +34,8 @@ class Sprucebot {
 		this.iframeUrl = interfaceUrl || required('interfaceUrl')
 		this.marketingUrl =
 			(interfaceUrl || required('interfaceUrl')) + '/marketing'
+
+		this.dbEnabled = dbEnabled
 		this._mutexes = {}
 
 		this.version = '1.0' // maybe pull from package.json?
@@ -67,7 +70,17 @@ class Sprucebot {
 			iframeUrl: this.iframeUrl,
 			marketingUrl: this.marketingUrl
 		}
-		return this.https.patch('/', data)
+		const results = await this.https.patch('/', data)
+		let database = null
+		if (this.dbEnabled) {
+			database = await this.provisionDatabase()
+		}
+
+		return { ...results, database }
+	}
+
+	async provisionDatabase() {
+		return this.https.get('/database/provision')
 	}
 
 	/**
