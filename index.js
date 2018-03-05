@@ -194,7 +194,17 @@ class Sprucebot {
 	 * @param {Boolean} suppressErrors
 	 */
 	async metas(
-		{ key, locationId, userId, sortBy, order, limit, value } = {},
+		{
+			key,
+			locationId,
+			userId,
+			createdAt,
+			updatedAt,
+			sortBy,
+			order,
+			limit,
+			value
+		} = {},
 		suppressParseErrors = true
 	) {
 		const query = { ...(Array.from(arguments)[0] || {}) }
@@ -207,6 +217,12 @@ class Sprucebot {
 
 		if (query.locationId) {
 			query.locationId = JSON.stringify(query.locationId)
+		}
+		if (query.createdAt) {
+			query.createdAt = JSON.stringify(query.createdAt)
+		}
+		if (query.updatedAt) {
+			query.updatedAt = JSON.stringify(query.updatedAt)
 		}
 		return this.https.get('/data', query)
 	}
