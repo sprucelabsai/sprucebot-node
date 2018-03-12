@@ -99,12 +99,44 @@ class Sprucebot {
 	 * Get a user without a location. GLOBAL SKILLS ONLY
 	 * 
 	 * @param {String} userId 
-	 * @param {Object} Optional query stirng to be added to the request
+	 * @param {Object} Optional query string to be added to the request
 	 */
 	async globalUser(userId, query) {
 		return this.https.get(`/users/${userId}`, query)
 	}
 
+	/**
+	 * Get all locations. GLOBAL SKILLS ONLY
+	 * 
+	 * @param {Object} Optional query string to be added to the request
+	 */
+	async globalLocations(query) {
+		return this.https.get(`/ge/locations`, query)
+	}
+
+	/**
+     * Create a user
+     *
+     * @param {Object} values
+     * @returns {Promise}
+     */
+	async createUser(values) {
+		return this.https.post('/ge/users', values)
+	}
+
+	/**
+     * Update a users role
+     *
+     * @param {String} locationId
+     * @param {String} userId
+     * @param {String} role
+     * @returns {Promise}
+     */
+	async updateRole(locationId, userId, role) {
+		return this.https.patch(
+			`/ge/locations/${locationId}/users/${userId}/${role}`
+		)
+	}
 	/**
 	 * Search for users who have been to this location
 	 *
