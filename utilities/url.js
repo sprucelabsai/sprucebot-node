@@ -25,9 +25,8 @@ module.exports = {
 		// Construct URL using the query
 		pathWithQuery += pathWithQuery.search(/\?/) === -1 ? '?' : '&'
 		if (query) {
-			pathWithQuery += '&' + this.serialize(query)
+			pathWithQuery += this.serialize(query)
 		}
-
 		return pathWithQuery
 	}
 }
